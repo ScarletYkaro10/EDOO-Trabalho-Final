@@ -10,7 +10,6 @@ class TabelaHash:
     Não utiliza dicionários nativos do Python.
     """
 
-    # Constante para marcar slots deletados (túmulos)
     DELETADO = "DELETADO"
 
     def __init__(self, tamanho=20):
@@ -21,7 +20,7 @@ class TabelaHash:
             tamanho (int): Tamanho fixo da tabela (padrão: 20)
         """
         self.tamanho = tamanho
-        self.dados = [None] * tamanho  # Lista fixa, não dinâmica como dicionário
+        self.dados = [None] * tamanho
 
     def _funcao_hash(self, chave):
         """
@@ -39,7 +38,7 @@ class TabelaHash:
 
         soma_ascii = 0
         for caractere in chave:
-            soma_ascii += ord(caractere)  # ord() retorna o código ASCII
+            soma_ascii += ord(caractere)
 
         indice = soma_ascii % self.tamanho
         return indice
@@ -58,24 +57,19 @@ class TabelaHash:
         indice = indice_inicial
         houve_colisao = False
 
-        # Sondagem linear: tenta o índice inicial, depois próximo, próximo...
         tentativas = 0
         while tentativas < self.tamanho:
-            # Se o slot está vazio ou deletado, podemos inserir aqui
             if self.dados[indice] is None or self.dados[indice] == self.DELETADO:
                 self.dados[indice] = chave
                 return (indice, houve_colisao)
 
-            # Se encontrou a mesma chave, não precisa inserir novamente
             if self.dados[indice] == chave:
                 return (indice, False)
 
-            # Colisão detectada! Vai para o próximo slot
             houve_colisao = True
-            indice = (indice + 1) % self.tamanho  # Volta ao início se chegar no fim
+            indice = (indice + 1) % self.tamanho
             tentativas += 1
 
-        # Tabela cheia
         raise Exception("Tabela hash está cheia! Não é possível inserir mais itens.")
 
     def buscar(self, chave):
@@ -92,22 +86,16 @@ class TabelaHash:
         indice = indice_inicial
         tentativas = 0
 
-        # Sondagem linear: busca no índice inicial e nos próximos
         while tentativas < self.tamanho:
-            # Se encontrou um slot vazio (nunca foi usado), a chave não existe
             if self.dados[indice] is None:
                 return None
 
-            # Se encontrou a chave, retorna o índice
             if self.dados[indice] == chave:
                 return indice
 
-            # Se encontrou DELETADO, continua procurando (pode ter sido movido para frente)
-            # Avança para o próximo slot
             indice = (indice + 1) % self.tamanho
             tentativas += 1
 
-        # Não encontrou após percorrer toda a tabela
         return None
 
     def remover(self, chave):
@@ -124,8 +112,6 @@ class TabelaHash:
         indice = self.buscar(chave)
 
         if indice is not None:
-            # Marca como DELETADO (túmulo) ao invés de None
-            # Isso preserva a cadeia de sondagem linear
             self.dados[indice] = self.DELETADO
             return True
 
@@ -154,19 +140,16 @@ class TabelaHash:
         return count
 
 
-# ========== TESTES NO TERMINAL ==========
 if __name__ == "__main__":
     print("=" * 60)
     print("TESTE DA TABELA HASH MANUAL")
     print("=" * 60)
     print()
 
-    # Criar tabela hash
     tabela = TabelaHash(tamanho=20)
     print(f"Tabela hash criada com tamanho fixo: {tabela.tamanho}")
     print()
 
-    # Teste 1: Inserir "Espada"
     print(">>> Teste 1: Inserir 'Espada'")
     indice, colisao = tabela.inserir("Espada")
     print(f"✓ 'Espada' inserida no índice {indice}")
@@ -174,7 +157,6 @@ if __name__ == "__main__":
         print("  ⚠ Colisão detectada!")
     print()
 
-    # Teste 2: Buscar "Espada"
     print(">>> Teste 2: Buscar 'Espada'")
     indice_busca = tabela.buscar("Espada")
     if indice_busca is not None:
@@ -183,7 +165,6 @@ if __name__ == "__main__":
         print("✗ 'Espada' não encontrada")
     print()
 
-    # Teste 3: Inserir mais itens (testar colisões)
     print(">>> Teste 3: Inserir mais itens")
     itens = ["Escudo", "Arco", "Poção", "Chave"]
     for item in itens:
@@ -192,7 +173,6 @@ if __name__ == "__main__":
         print(f"✓ '{item}' inserido no índice {indice}{status_colisao}")
     print()
 
-    # Teste 4: Mostrar tabela completa
     print(">>> Teste 4: Estado da tabela")
     estado = tabela.mostrar_tabela()
     for i, item in enumerate(estado):
@@ -201,7 +181,6 @@ if __name__ == "__main__":
             print(f"  Índice {i:2d}: {status}")
     print()
 
-    # Teste 5: Remover "Espada"
     print(">>> Teste 5: Remover 'Espada'")
     if tabela.remover("Espada"):
         print("✓ 'Espada' removida (marcada como DELETADO)")
@@ -209,14 +188,12 @@ if __name__ == "__main__":
         print("✗ 'Espada' não encontrada para remover")
     print()
 
-    # Teste 6: Verificar que o túmulo está lá
     print(">>> Teste 6: Verificar túmulo após remoção")
     estado = tabela.mostrar_tabela()
     indice_espada = tabela._funcao_hash("Espada")
     print(f"  Índice {indice_espada} (onde 'Espada' estava): {estado[indice_espada]}")
     print()
 
-    # Teste 7: Buscar item que colidiu (deve funcionar mesmo com túmulo)
     print(">>> Teste 7: Buscar 'Escudo' (deve funcionar mesmo com túmulo)")
     indice_escudo = tabela.buscar("Escudo")
     if indice_escudo is not None:
@@ -225,7 +202,6 @@ if __name__ == "__main__":
         print("✗ 'Escudo' não encontrado")
     print()
 
-    # Teste 8: Tentar inserir novamente no slot do túmulo
     print(">>> Teste 8: Inserir 'Machado' (pode usar slot do túmulo)")
     indice, colisao = tabela.inserir("Machado")
     print(f"✓ 'Machado' inserido no índice {indice}")
@@ -233,7 +209,6 @@ if __name__ == "__main__":
         print("  ⚠ Colisão detectada!")
     print()
 
-    # Teste 9: Estatísticas finais
     print(">>> Teste 9: Estatísticas")
     print(f"  Itens válidos na tabela: {tabela.contar_itens()}")
     print()
